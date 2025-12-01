@@ -76,7 +76,7 @@ $$
 Differentiating and solving we get
 
 $$
-\hat{\boldsymbol{\mu}} = (I + L L^top)^{-1} \boldsymbol{y}.
+\hat{\boldsymbol{\mu}} = (I + L L^\top)^{-1} \boldsymbol{y}.
 $$
 
 This is going to be a very sparse problem in general, so we want to
@@ -88,6 +88,13 @@ A <- I + lambda * tcrossprod(L)
 C <- Cholesky(A, perm = TRUE)
 solve(C, b)
 ```
+
+Using Woodbury's identity, we can identify this as being equivalent to
+the Ridge inverse $(L^\top L + \lambda^{-1} I)^{-1}$, which may be a
+smaller or larger problem depending on the dimensions of
+$L$. Generally, the number of penalties $K$ will be larger than the
+length of $\boldsymbol{\mu}$, so the $K \times K$ matrix $L^\top L$
+will be larger.
 
 
 
@@ -120,7 +127,9 @@ the changes between neighbours (or second order differences between
 neighbourhood structure on the nodes. For spatial data on
 $\mathbb{Z}^2$, standard four or eight neighbour structures may be
 used. For point process data on $\mathbb{R}^2$, a Delauney
-triangulation may give the edge structure.
+triangulation may give the edge structure. If the units are
+geographical units (e.g., US counties), neighbours may be other units
+with a common border.
 
 
 # Weights using covariates
@@ -135,9 +144,19 @@ $$
 $$
 
 and so on. In other words, the linear combinations to be penalized now
-become functions of the covariates as well. TODO: check whether the
-second order difference stays a linear combination.
+become functions of the covariates as well. In general, the covariates
+should define some kind of distance (or edge weight) between $t$-s
+that determines how similar they are in covariate space, with the
+understanding that corresponding $\mu_t$-s should be close (there
+difference should be penalized).
 
+TODO: check whether the second order difference stays a linear
+combination, and think about how best to interpret covariates.
+
+TODO: In general, covariates may define edges --- makes the graph
+potentially dense, which will make life difficult. However, this may
+make something like patch similarity for images feasible, say via PCA
+basis.
 
 # Interpolation
 
@@ -159,6 +178,38 @@ $$
 
 where each row of $A$ has exactly one 1 (with rest 0).
 
+Note that having $A \ne I$ means that the problem may not be full rank
+--- the rank would be determined by the structure of the penalty.
+
+
+# Multiple observations
+
+In regression contexts there may be multiple observations at the same
+$t$, which have a common $\mu_t$. In that case, we may simply replace
+$Y_t$ by $\bar{Y}_t$, the average of the observations. However, we
+then need to add precision weights that take into account the number
+of observations averaged. Specifically, ignoring terms free of
+$\boldsymbol{\mu}$, we want to minimize
+
+$$
+\sum n_i (y_i - \mu_i)^2 + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu} = 
+\lVert Q ( \boldsymbol{y} - \boldsymbol{\mu} ) \rVert^2  + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu}
+$$
+
+where $Q$ is diagonal with entries $\sqrt{n_i}$.
+
+# General formulation
+
+Combining everything together, and differentiating
+w.r.t. $\boldsymbol{\mu}$, the final equations we need to solve are
+
+$$
+\left( A^\top N A + \lambda L L^\top \right) \boldsymbol{\mu} = A^\top N \boldsymbol{y}
+$$
+
+For implementation, defaults would be $A = I, N = I$. Everything else
+needs to be specified, with $L$ determined by the structure of the
+problem.
 
 
 
