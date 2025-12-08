@@ -212,6 +212,56 @@ needs to be specified, with $L$ determined by the structure of the
 problem.
 
 
+# Degrees of freedom
+
+The choice of smoothing parameter $\lambda$ is always tricky, and will
+probably depend on context. It is useful to interpret it in terms of a
+"degrees of freedom" or "equivalent number of parameters". By analogy
+with a linear model, we can define it as the trace of the "hat matrix"
+when that makes sense.
+
+It is unclear what we mean by the hat matrix when $A \new I$, but
+otherwise a natural interpretation is
+
+$$
+\hat{\boldsymbol{y}} = \hat{\boldsymbol{\mu}} = \left( N + \lambda L L^\top \right)^{-1} N \boldsymbol{y},
+$$
+
+so that the hat matrix is 
+
+$$
+H = \left( N + \lambda L L^\top \right)^{-1} N
+$$
+
+We need to compute $\text{trace}(H)$. To do this, it is first useful
+to note that the precision weights $N$ do not complicte matters much,
+by observing that
+
+$$
+\text{trace}\left{ \left( N + \lambda L L^\top \right)^{-1} N \right} = 
+	\text{trace}\left{ \left( I + \lambda B B^\top \right)^{-1} \right},
+$$
+
+where $B = N^{-\frac12} L$ (this follows by splitting $N = N^{\frac12}
+N^{\frac12}$ and moving one of them to the left inside the trace,
+which is allowed because $\text{trace}(AB) = \text{trace}(BA)$).
+
+Next, we note that $\text{trace}(A^{-1}) = \sum \gamma_i^{-1}$, where
+$\gamma_i$-s are the eigenvalues of $A$. Further, note that the
+eigenvalues of $I + \lambda B B^\top$ are of the form
+
+$$
+\gamma_i = 1 + \lambba \eta_i,
+$$
+
+where $\eta_i$ are the eigenvalues of $B B^{\top}$. Thus, once we
+(numerically) compute the $\eta_i$-s, the corresponding "degrees of
+freedom" $\nu$ can be easily calculated as
+
+$$
+\nu(\lambda) = \sum_{i=1}^n \frac1{1 + \lambda \eta_i}
+$$
+
 
 
 
