@@ -220,7 +220,7 @@ probably depend on context. It is useful to interpret it in terms of a
 with a linear model, we can define it as the trace of the "hat matrix"
 when that makes sense.
 
-It is unclear what we mean by the hat matrix when $A \new I$, but
+It is unclear what we mean by the hat matrix when $A \neq I$, but
 otherwise a natural interpretation is
 
 $$
@@ -238,8 +238,8 @@ to note that the precision weights $N$ do not complicte matters much,
 by observing that
 
 $$
-\text{trace}\left{ \left( N + \lambda L L^\top \right)^{-1} N \right} = 
-	\text{trace}\left{ \left( I + \lambda B B^\top \right)^{-1} \right},
+\text{trace}\left\{ \left( N + \lambda L L^\top \right)^{-1} N \right\} = 
+	\text{trace}\left\{ \left( I + \lambda B B^\top \right)^{-1} \right\},
 $$
 
 where $B = N^{-\frac12} L$ (this follows by splitting $N = N^{\frac12}
@@ -251,7 +251,7 @@ $\gamma_i$-s are the eigenvalues of $A$. Further, note that the
 eigenvalues of $I + \lambda B B^\top$ are of the form
 
 $$
-\gamma_i = 1 + \lambba \eta_i,
+\gamma_i = 1 + \lambda \eta_i,
 $$
 
 where $\eta_i$ are the eigenvalues of $B B^{\top}$. Thus, once we
@@ -262,10 +262,20 @@ $$
 \nu(\lambda) = \sum_{i=1}^n \frac1{1 + \lambda \eta_i}
 $$
 
+One may want to do the inverse calculation, i.e., choose $\lambda$
+based on a user-specified $\nu$. There is no closed form solution, so
+the solution has to be obtained numerically. It is clear that $\nu(0)
+= n$ (no penalty, so solution is pointwise mean) and $\nu(M) < 1$ for
+$M = n / \min \{ \eta_i \}$, and presumably the target value of $\nu$
+will lie within these bounds. $\nu(\lambda)$ is clearly a decreasing
+function, so any iterative method should be able to find the solution
+easily (I should use `uniroot()` but will probably use _regula falsi_
+just because I have always wanted to use it somewhere).
 
 
-
-
-
+We can also blindly apply this is the $L_1$ case, inserting
+$W_{\hat{\boldsymbol{\mu}}}$ where appropriate, to get a post-fitting
+estimate of $\nu$, though choosing $\lambda$ based on a target $\nu$
+will not be feasible using this approach.
 
 
