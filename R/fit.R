@@ -64,7 +64,7 @@ lspen_dense <- function(x, y, n = 1, L, L.method = "d1", df = NULL,
     else 
         enp <- lambda2df(lambda, eta)
 
-    print(df)
+    print(enp)
 
     structure(list(fitted = mu_hat,
                    enp = enp,
