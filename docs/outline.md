@@ -193,10 +193,10 @@ $\boldsymbol{\mu}$, we want to minimize
 
 $$
 \sum n_i (y_i - \mu_i)^2 + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu} = 
-\lVert Q ( \boldsymbol{y} - \boldsymbol{\mu} ) \rVert^2  + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu}
+\lVert N^{\frac12} ( \boldsymbol{y} - \boldsymbol{\mu} ) \rVert^2  + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu}
 $$
 
-where $Q$ is diagonal with entries $\sqrt{n_i}$.
+where $N$ is diagonal with entries $n_i$.
 
 # General formulation
 
