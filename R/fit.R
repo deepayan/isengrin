@@ -8,7 +8,7 @@ irls_wts <- function(x, eps = 0.0001) {
 }
 
 
-lambda2df <- function(lambda, eta, L, n, B = sqrt(n) * L)
+lambda2df <- function(lambda, eta, L, n, B = (1/sqrt(n)) * L)
 {
     if (missing(eta))
         eta <- eigen(tcrossprod(B), symmetric = TRUE, only.values = TRUE)$values
@@ -18,15 +18,14 @@ lambda2df <- function(lambda, eta, L, n, B = sqrt(n) * L)
 
 ## Proof-of-concept reference implementation using dense matrix operations
 
-constructL_1d_dense <- function(p, filter = c(1, -2, 1))
+constructL_1d_dense <- function(p, filter)
 {
     flen <- length(filter)
+    str(filter)
     stopifnot("'p' must be larger than 'length(filter)'" = p > flen)
-    col1 <- c(filter, rep(0, p - flen))
-    L <- toeplitz(col1, # 1st column
-                  rep(c(1, 0), c(1, p-1))) # 1st row
-    L <- L[, seq_len(p - flen + 1)]
-    L
+    row1 <- c(filter, rep(0, p - flen))
+    col1 <- c(filter[[1]], rep(0, p - flen))
+    stats::toeplitz(col1, row1)
 }
 
 
@@ -47,18 +46,18 @@ lspen_dense <- function(x, y, n = 1, L, L.method = "d1", df = NULL,
         L <- constructL_1d_dense(p, filter)
     }
 
-    eta <- eigen(tcrossprod(sqrt(n) * L), symmetric = TRUE, only.values = TRUE)$values
+    BtB <- tcrossprod((1/sqrt(n)) * t(L))
+    eta <- eigen(BtB, symmetric = TRUE, only.values = TRUE)$values
 
-    
-    mu_hat <- solve(N + lambda * tcrossprod(L), N %*% y) # or n * y
+    mu_hat <- solve(N + lambda * crossprod(L), n * y) # or N %*% y
 
     if (niter) {
         for (i in seq_len(niter)) {
-            sqrtW <- diag(irls_wts(t(mu_hat) %*% L))
-            mu_hat <- solve(N + lambda * tcrossprod(L %*% sqrtW), N %*% y)
+            sqrtW <- irls_wts(L %*% mu_hat)
+            mu_hat <- solve(N + lambda * crossprod(sqrtW * L), n * y)
         }
-        ## FIXME: update
-        eta1 <- eigen(tcrossprod(sqrt(n) * L), symmetric = TRUE, only.values = TRUE)$values
+        BtB <- tcrossprod((1/sqrt(n)) * t(sqrtW * L))
+        eta1 <- eigen(BtB, symmetric = TRUE, only.values = TRUE)$values
         enp <- lambda2df(lambda, eta1)
     }
     else 

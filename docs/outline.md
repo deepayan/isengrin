@@ -64,19 +64,24 @@ depending on whether we want a $L_2$ or $L_1$ penalty. Focusing on the
 $L_2$ version for now, we can rewrite this as minimizing
 
 $$
-\lVert \boldsymbol{y} - \boldsymbol{\mu} \rVert^2  + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu}
+\lVert \boldsymbol{y} - \boldsymbol{\mu} \rVert^2  + \lambda \boldsymbol{\mu}^\top L^\top L \boldsymbol{\mu}
 $$
 
 where 
 
 $$
-L = \begin{bmatrix} \ell_1 & \ell_2 & \cdots & \ell_K \end{bmatrix}
+L = \begin{bmatrix} 
+	\ell^\top_1 \\ 
+	\ell^\top_2 \\
+	\vdots \\
+	\ell^\top_K 
+\end{bmatrix}
 $$
 
 Differentiating and solving we get
 
 $$
-\hat{\boldsymbol{\mu}} = (I + L L^\top)^{-1} \boldsymbol{y}.
+\hat{\boldsymbol{\mu}} = (I + L^\top L)^{-1} \boldsymbol{y}.
 $$
 
 This is going to be a very sparse problem in general, so we want to
@@ -90,10 +95,10 @@ solve(C, b)
 ```
 
 Using Woodbury's identity, we can identify this as being equivalent to
-the Ridge inverse $(L^\top L + \lambda^{-1} I)^{-1}$, which may be a
+the Ridge inverse $(L L^\top + \lambda^{-1} I)^{-1}$, which may be a
 smaller or larger problem depending on the dimensions of
 $L$. Generally, the number of penalties $K$ will be larger than the
-length of $\boldsymbol{\mu}$, so the $K \times K$ matrix $L^\top L$
+length of $\boldsymbol{\mu}$, so the $K \times K$ matrix $L L^\top$
 will be larger.
 
 
@@ -104,7 +109,7 @@ Using the standard IRLS approach, we can write the $L_1$ solution
 $\boldsymbol{\mu}$ as minimizing
 
 $$
-\lVert \boldsymbol{y} - \boldsymbol{\mu} \rVert^2  + \lambda \boldsymbol{\mu}^\top L W_{\boldsymbol{\mu}} L^\top \boldsymbol{\mu}
+\lVert \boldsymbol{y} - \boldsymbol{\mu} \rVert^2 + \lambda \boldsymbol{\mu}^\top L^\top W_{\boldsymbol{\mu}} L \boldsymbol{\mu}
 $$
 
 where $W_{\boldsymbol{\mu}}$ is a diagonal weight matrix with diagonal
@@ -173,7 +178,7 @@ selection operation on the larger $\boldsymbol{\mu}$ to get the subset
 that corresponds to the observed data. In other words, we minimise
 
 $$
-\lVert \boldsymbol{y} - A \boldsymbol{\mu} \rVert^2  + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu}
+\lVert \boldsymbol{y} - A \boldsymbol{\mu} \rVert^2  + \lambda \boldsymbol{\mu}^\top L^\top L \boldsymbol{\mu}
 $$
 
 where each row of $A$ has exactly one 1 (with rest 0).
@@ -192,8 +197,8 @@ of observations averaged. Specifically, ignoring terms free of
 $\boldsymbol{\mu}$, we want to minimize
 
 $$
-\sum n_i (y_i - \mu_i)^2 + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu} = 
-\lVert N^{\frac12} ( \boldsymbol{y} - \boldsymbol{\mu} ) \rVert^2  + \lambda \boldsymbol{\mu}^\top L L^\top \boldsymbol{\mu}
+\sum n_i (y_i - \mu_i)^2 + \lambda \boldsymbol{\mu}^\top L^\top L \boldsymbol{\mu} = 
+\lVert N^{\frac12} ( \boldsymbol{y} - \boldsymbol{\mu} ) \rVert^2  + \lambda \boldsymbol{\mu}^\top L^\top L \boldsymbol{\mu}
 $$
 
 where $N$ is diagonal with entries $n_i$.
@@ -204,7 +209,7 @@ Combining everything together, and differentiating
 w.r.t. $\boldsymbol{\mu}$, the final equations we need to solve are
 
 $$
-\left( A^\top N A + \lambda L L^\top \right) \boldsymbol{\mu} = A^\top N \boldsymbol{y}
+\left( A^\top N A + \lambda L^\top L \right) \boldsymbol{\mu} = A^\top N \boldsymbol{y}
 $$
 
 For implementation, defaults would be $A = I, N = I$. Everything else
@@ -224,13 +229,13 @@ It is unclear what we mean by the hat matrix when $A \neq I$, but
 otherwise a natural interpretation is
 
 $$
-\hat{\boldsymbol{y}} = \hat{\boldsymbol{\mu}} = \left( N + \lambda L L^\top \right)^{-1} N \boldsymbol{y},
+\hat{\boldsymbol{y}} = \hat{\boldsymbol{\mu}} = \left( N + \lambda L^\top L \right)^{-1} N \boldsymbol{y},
 $$
 
 so that the hat matrix is 
 
 $$
-H = \left( N + \lambda L L^\top \right)^{-1} N
+H = \left( N + \lambda L^\top L \right)^{-1} N
 $$
 
 We need to compute $\text{trace}(H)$. To do this, it is first useful
@@ -238,17 +243,17 @@ to note that the precision weights $N$ do not complicte matters much,
 by observing that
 
 $$
-\text{trace}\left\{ \left( N + \lambda L L^\top \right)^{-1} N \right\} = 
-	\text{trace}\left\{ \left( I + \lambda B B^\top \right)^{-1} \right\},
+\text{trace}\left\{ \left( N + \lambda L^\top L \right)^{-1} N \right\} = 
+	\text{trace}\left\{ \left( I + \lambda B^\top B \right)^{-1} \right\},
 $$
 
-where $B = N^{-\frac12} L$ (this follows by splitting $N = N^{\frac12}
+where $B = L N^{-\frac12}$ (this follows by splitting $N = N^{\frac12}
 N^{\frac12}$ and moving one of them to the left inside the trace,
 which is allowed because $\text{trace}(AB) = \text{trace}(BA)$).
 
 Next, we note that $\text{trace}(A^{-1}) = \sum \gamma_i^{-1}$, where
 $\gamma_i$-s are the eigenvalues of $A$. Further, note that the
-eigenvalues of $I + \lambda B B^\top$ are of the form
+eigenvalues of $I + \lambda B^\top B$ are of the form
 
 $$
 \gamma_i = 1 + \lambda \eta_i,
