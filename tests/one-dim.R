@@ -19,5 +19,27 @@ lines(x, fit1$fitted, col = 3)
 ## choose lambda by df
 
 lfit <- loess(y ~ x)
-lines(x, lfit$fitted, col = 2)
+plot(x, y)
+lines(x, lfit$fitted, col = 1) # loess
 lfit$enp
+
+## Use this as target df for L2
+
+fit2 <- lspen_dense(x, y, L.method = "d2", df = lfit$enp)
+fit1 <- lspen_dense(x, y, L.method = "d2", df = lfit$enp, niter = 50)
+
+lines(x, fit2$fitted, col = 2) # L2
+lines(x, fit1$fitted, col = 3) # L1
+
+plot(diff(fit1$fitted, differences = 2))
+
+
+
+fit1 <- lspen_dense(x, y, L.method = "d2", df = 23, niter = 50)
+plot(diff(fit1$fitted, differences = 2))
+
+
+
+
+
+

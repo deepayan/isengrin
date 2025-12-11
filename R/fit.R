@@ -16,6 +16,23 @@ lambda2df <- function(lambda, eta, L, n, B = (1/sqrt(n)) * L)
 }
 
 
+df2lambda <- function(df, eta, L, n, B = (1/sqrt(n)) * L,
+                      rank = sum(zapsmall(eta) > 0))
+{
+    if (missing(eta))
+        eta <- eigen(tcrossprod(B), symmetric = TRUE, only.values = TRUE)$values
+    M <- length(eta) / eta[[rank]]
+    stopifnot("'M' is too small; check 'eta' and 'rank'" = M > 0.5)
+    f <- function(x) { sum(1 / (1 + x * eta)) - df }
+    u <- uniroot(f, c(0.5, M))
+    u$root
+}
+
+
+
+
+
+
 ## Proof-of-concept reference implementation using dense matrix operations
 
 constructL_1d_dense <- function(p, filter)
@@ -29,9 +46,16 @@ constructL_1d_dense <- function(p, filter)
 }
 
 
+constructL_1d_sparse <- function(p, filter)
+{
+    constructL_1d_dense(p, filter) |> Matrix::sparseMatrix()
+}
 
-lspen_dense <- function(x, y, n = 1, L, L.method = "d1", df = NULL,
-                        lambda = df2lambda(df), niter = 0)
+
+
+lspen_dense <- function(x, y, n = 1, L, L.method = "d1",
+                        df = NULL, lambda = NULL,
+                        niter = 0)
 {
     p <- length(y)
     stopifnot("'n' must be scalar or have same length as y" = length(n) %in% c(1, p))
@@ -46,8 +70,10 @@ lspen_dense <- function(x, y, n = 1, L, L.method = "d1", df = NULL,
         L <- constructL_1d_dense(p, filter)
     }
 
+    likely_rank <- min(dim(L))
     BtB <- tcrossprod((1/sqrt(n)) * t(L))
     eta <- eigen(BtB, symmetric = TRUE, only.values = TRUE)$values
+    if (missing(lambda)) lambda <- df2lambda(df, eta = eta, rank = likely_rank)
 
     mu_hat <- solve(N + lambda * crossprod(L), n * y) # or N %*% y
 
