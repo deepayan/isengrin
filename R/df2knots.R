@@ -10,7 +10,8 @@ df2knots <- function(df, x, y, n = 1, niter = 20)
     if (missing(n) && anyDuplicated(x))
         stop("'x' values must be distinct (with weights in 'n')")
 
-    lssfit1 <- lspen_dense(x, y, n = n, L.method = "d2", df = df, niter = niter)
+    lssfit1 <- lspen_dense(x, y, n = n, L.method = "d2", df = df,
+                           niter = niter, verbose = FALSE)
 
     d2s <- diff(lssfit1$fitted, differences = 2)
     d2s[abs(d2s) < 0.0001] <- 0
@@ -29,7 +30,7 @@ df2knots <- function(df, x, y, n = 1, niter = 20)
     eknots <- 0.5 * (ux[srle$starts - 1] + ux[srle$ends - 1])
 
     list(knots = eknots,
-         lambda = lambda,
-         enp = enp)
+         lambda = lssfit1$lambda,
+         enp = lssfit1$enp)
 }
 
