@@ -38,7 +38,7 @@ df2lambda <- function(df, eta, L, n, B = (1/sqrt(n)) * L,
 constructL_1d_dense <- function(p, filter)
 {
     flen <- length(filter)
-    str(filter)
+    ## str(filter)
     stopifnot("'p' must be larger than 'length(filter)'" = p > flen)
     row1 <- c(filter, rep(0, p - flen))
     col1 <- c(filter[[1]], rep(0, p - flen))
@@ -55,7 +55,7 @@ constructL_1d_sparse <- function(p, filter)
 
 lspen_dense <- function(x, y, n = 1, L, L.method = "d1",
                         df = NULL, lambda = NULL,
-                        niter = 0)
+                        niter = 0, verbose = TRUE)
 {
     p <- length(y)
     stopifnot("'n' must be scalar or have same length as y" = length(n) %in% c(1, p))
@@ -89,9 +89,10 @@ lspen_dense <- function(x, y, n = 1, L, L.method = "d1",
     else 
         enp <- lambda2df(lambda, eta)
 
-    print(enp)
+    if (verbose) message("Equiv d.f. (trace(H)): ", enp)
 
     structure(list(fitted = mu_hat,
+                   lambda = lambda,
                    enp = enp,
                    niter = niter),
               class = c("lpen"))
