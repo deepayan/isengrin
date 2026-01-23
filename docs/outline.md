@@ -243,8 +243,8 @@ to note that the precision weights $N$ do not complicte matters much,
 by observing that
 
 $$
-\text{trace}\left\{ \left( N + \lambda L^\top L \right)^{-1} N \right\} = 
-	\text{trace}\left\{ \left( I + \lambda B^\top B \right)^{-1} \right\},
+\text{trace}\left\lbrace \left( N + \lambda L^\top L \right)^{-1} N \right\rbrace = 
+	\text{trace}\left\lbrace \left( I + \lambda B^\top B \right)^{-1} \right\rbrace,
 $$
 
 where $B = L N^{-\frac12}$ (this follows by splitting $N = N^{\frac12}
